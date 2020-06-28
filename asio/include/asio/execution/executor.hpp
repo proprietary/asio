@@ -82,6 +82,49 @@ ASIO_CONCEPT executor = is_executor<T>::value;
 
 #endif // defined(ASIO_HAS_CONCEPTS)
 
+/// The is_executor_of trait detects whether a type T satisfies the
+/// execution::executor_of concept for some set of value arguments.
+/**
+ * Class template @c is_executor_of is a type trait that is derived from @c
+ * true_type if the type @c T meets the concept definition for a executor for
+ * value arguments @c Vs, otherwise @c false_type.
+ */
+template <typename T, typename F>
+struct is_executor_of :
+#if defined(GENERATING_DOCUMENTATION)
+  integral_constant<bool, automatically_determined>
+#else // defined(GENERATING_DOCUMENTATION)
+  integral_constant<bool,
+    is_executor<T>::value
+      && is_constructible<typename remove_cvref<F>::type, F>::value
+      && is_move_constructible<typename remove_cvref<F>::type>::value
+      && can_execute<const T, F>::value
+  >
+#endif // defined(GENERATING_DOCUMENTATION)
+{
+};
+
+#if defined(ASIO_HAS_VARIABLE_TEMPLATES)
+
+template <typename T, typename F>
+ASIO_CONSTEXPR const bool is_executor_of_v = is_executor<T, F>::value;
+
+#endif // defined(ASIO_HAS_VARIABLE_TEMPLATES)
+
+#if defined(ASIO_HAS_CONCEPTS)
+
+template <typename T, typename F>
+ASIO_CONCEPT executor_of = is_executor_of<T, F>::value;
+
+#define ASIO_EXECUTION_RECEIVER_OF(f) \
+  ::asio::execution::executor_of<f>
+
+#else // defined(ASIO_HAS_CONCEPTS)
+
+#define ASIO_EXECUTION_RECEIVER_OF typename
+
+#endif // defined(ASIO_HAS_CONCEPTS)
+
 } // namespace execution
 } // namespace asio
 
